@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileMaster - Complete File Management System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.25rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar .container {
+            max-width: 1280px;
+            margin: auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 0.5rem;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(236, 72, 153, 0.1);
+            color: #ec4899;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: auto;
+            padding: 0 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 5rem 2rem 4rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+        }
+
+        section {
+            padding: 4rem 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-header p {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(236, 72, 153, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .card h3, .card h4 {
+            color: #ffffff;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .card h3 { font-size: 1.5rem; }
+        .card h4 { font-size: 1.25rem; }
+
+        .card p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 0.5rem;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #ec4899;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        small {
+            display: block;
+            margin-top: 0.5rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.875rem 2.25rem;
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+            transition: all 0.3s ease;
+            margin-right: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(236, 72, 153, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        }
+
+        table {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        table th {
+            background: rgba(236, 72, 153, 0.2);
+            color: #ffffff;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        table td {
+            padding: 1rem;
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        table tr:hover {
+            background: rgba(236, 72, 153, 0.05);
+        }
+
+        .status-message {
+            display: none;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+
+        .status-message.active { display: block; }
+        .status-message.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+            color: #34d399;
+        }
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #f87171;
+        }
+        .status-message.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: #f59e0b;
+            color: #fbbf24;
+        }
+
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(236, 72, 153, 0.2);
+            border-top-color: #ec4899;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 2rem auto;
+        }
+
+        .spinner.active { display: block; }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 3rem 0;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 4rem;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.3), transparent);
+            margin: 4rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .section-header h2 { font-size: 1.75rem; }
+            .navbar .container { flex-direction: column; gap: 1rem; }
+            .card { padding: 1.5rem; }
+            .container { padding: 0 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">FileMaster ✨</h1>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#organize">Organize</a></li>
+                <li><a href="#rename">Rename</a></li>
+                <li><a href="#duplicates">Duplicates</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="container">
+            <h1>FileMaster ✨</h1>
+            <p>Your all-in-one smart assistant to sort, rename, and clean your digital world.</p>
+        </div>
+    </section>
+
+    <!-- FILE ORGANIZER -->
+    <section id="organize">
+        <div class="container">
+            <div class="section-header">
+                <h2>📁 File Organizer</h2>
+                <p>Automatically organize files by type, date, or custom rules</p>
+            </div>
+
+            <div class="card">
+                <h3>Organization Settings</h3>
+                <form id="organizeForm">
+                    <div class="form-group">
+                        <label for="directory">Directory Path:</label>
+                        <input type="text" id="directory" placeholder="C:\Users\YourName\Downloads" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mode">Organization Mode:</label>
+                        <select id="mode">
+                            <option value="type">By File Type</option>
+                            <option value="date">By Date</option>
+                            <option value="project">By Project</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="targetDir">Target Directory (optional):</label>
+                        <input type="text" id="targetDir" placeholder="Leave empty to organize in place">
+                    </div>
+                    <div class="form-group" id="projectRulesGroup" style="display: none;">
+                        <label for="projectRules">Project Rules (JSON):</label>
+                        <textarea id="projectRules" rows="6" placeholder='{"WebDev": {"extensions": [".html", ".css", ".js"]}}'></textarea>
+                        <small>Example: {"WebDev": {"extensions": [".html"]}, "Python": {"extensions": [".py"]}}</small>
+                    </div>
+                    <button type="button" class="btn" onclick="previewOrganize()">Preview Changes</button>
+                    <button type="button" class="btn btn-success" onclick="executeOrganize()" id="executeOrgBtn" style="display: none;">Execute</button>
+                </form>
+                <div id="orgStatus" class="status-message"></div>
+                <div class="spinner" id="orgSpinner"></div>
+                <div id="orgPreview" style="display: none; margin-top: 2rem;">
+                    <h3>Preview</h3>
+                    <p id="orgPreviewSummary"></p>
+                    <table><thead><tr><th>Original</th><th>Destination</th><th>Size</th></tr></thead>
+                    <tbody id="orgPreviewBody"></tbody></table>
+                </div>
+                <div id="orgResults" style="display: none; margin-top: 2rem;">
+                    <h3>Results</h3>
+                    <div id="orgResultsContent"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- SCREENSHOT RENAMER -->
+    <section id="rename">
+        <div class="container">
+            <div class="section-header">
+                <h2>🖼️ Screenshot Renamer</h2>
+                <p>Use OCR to extract text and generate descriptive filenames</p>
+            </div>
+
+            <div class="card">
+                <h3>📱 Quick Upload Method</h3>
+                <p>Upload images → Get renamed files → Download</p>
+                <form id="uploadForm">
+                    <div class="form-group">
+                        <input type="file" id="fileUpload" multiple accept="image/*" required>
+                        <div id="fileCount" style="margin-top: 10px; color: #34d399;"></div>
+                    </div>
+                    <button type="button" class="btn" onclick="uploadAndPreview()">🔍 Upload & Preview</button>
+                    <button type="button" class="btn btn-success" onclick="executeUploadRename()" id="executeUploadBtn" style="display: none;">✅ Rename</button>
+                    <button type="button" class="btn btn-secondary" onclick="downloadAllRenamed()" id="downloadAllBtn" style="display: none;">⬇️ Download All</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h4>💻 Advanced: File Paths (Desktop)</h4>
+                <p>Enter file paths to rename in original location</p>
+                <form id="pathForm">
+                    <div class="form-group">
+                        <label for="fileList">File Paths (one per line):</label>
+                        <textarea id="fileList" rows="6" placeholder="C:\Users\YourName\Pictures\Screenshot1.png"></textarea>
+                        <small>💡 Right-click files → "Copy as path"</small>
+                    </div>
+                    <button type="button" class="btn" onclick="previewFromPaths()">🔍 Preview</button>
+                    <button type="button" class="btn btn-success" onclick="executePathRename()" id="executePathBtn" style="display: none;">✅ Rename</button>
+                </form>
+            </div>
+
+            <div id="renameStatus" class="status-message"></div>
+            <div class="spinner" id="renameSpinner"></div>
+            <div class="card" id="renamePreview" style="display: none;">
+                <h3>Preview</h3>
+                <p id="renamePreviewSummary"></p>
+                <table><thead><tr><th>Original</th><th>Proposed Name</th><th>Extracted Text</th></tr></thead>
+                <tbody id="renamePreviewBody"></tbody></table>
+            </div>
+            <div class="card" id="renameResults" style="display: none;">
+                <h3>Results</h3>
+                <div id="renameResultsContent"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- DUPLICATE FINDER -->
+    <section id="duplicates">
+        <div class="container">
+            <div class="section-header">
+                <h2>🔍 Duplicate Finder</h2>
+                <p>Find and remove duplicate files to free up space</p>
+            </div>
+
+            <div class="card">
+                <h3>Scan for Duplicates</h3>
+                <form id="duplicateForm">
+                    <div class="form-group">
+                        <label for="dupDirectory">Directory Path:</label>
+                        <input type="text" id="dupDirectory" placeholder="C:\Users\YourName\Documents" required>
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" id="recursive" checked style="width: auto; margin-right: 0.5rem;">Scan subdirectories</label>
+                    </div>
+                    <button type="button" class="btn" onclick="scanDuplicates()">Scan for Duplicates</button>
+                </form>
+                <div id="dupStatus" class="status-message"></div>
+                <div class="spinner" id="dupSpinner"></div>
+                <div id="dupResults" style="display: none; margin-top: 2rem;">
+                    <h3>Duplicate Files Found</h3>
+                    <p id="dupSummary"></p>
+                    <div id="dupResultsContent"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 FileMaster - Manage files beautifully ✨</p>
+        </div>
+    </footer>
+
+    <script>
+        // Utility Functions
+        function showStatus(id, msg, type) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.className = `status-message active ${type}`;
+        }
+        function hideStatus(id) { document.getElementById(id).style.display = 'none'; }
+        function showSpinner(id) { document.getElementById(id).classList.add('active'); }
+        function hideSpinner(id) { document.getElementById(id).classList.remove('active'); }
+
+        // ORGANIZE FUNCTIONS
+        document.getElementById('mode').addEventListener('change', function() {
+            document.getElementById('projectRulesGroup').style.display = 
+                this.value === 'project' ? 'block' : 'none';
+        });
+
+        async function previewOrganize() {
+            hideStatus('orgStatus');
+            document.getElementById('orgPreview').style.display = 'none';
+            document.getElementById('orgResults').style.display = 'none';
+            document.getElementById('executeOrgBtn').style.display = 'none';
+            
+            const directory = document.getElementById('directory').value;
+            const mode = document.getElementById('mode').value;
+            const targetDir = document.getElementById('targetDir').value || directory;
+            
+            if (!directory) {
+                showStatus('orgStatus', 'Please enter a directory path', 'error');
+                return;
+            }
+            
+            showSpinner('orgSpinner');
+            
+            try {
+                const data = { directory, mode, target_dir: targetDir };
+                if (mode === 'project') {
+                    const rulesText = document.getElementById('projectRules').value;
+                    if (rulesText) data.rules = JSON.parse(rulesText);
+                }
+                
+                const response = await fetch('/organize/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayOrgPreview(result);
+                    document.getElementById('executeOrgBtn').style.display = 'inline-block';
+                    showStatus('orgStatus', `Found ${result.total_files} files`, 'success');
+                } else {
+                    showStatus('orgStatus', 'Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showStatus('orgStatus', 'Error: ' + error.message, 'error');
+            } finally {
+                hideSpinner('orgSpinner');
+            }
+        }
+
+        function displayOrgPreview(result) {
+            document.getElementById('orgPreviewSummary').textContent = 
+                `${result.total_files} files will be organized`;
+            const tbody = document.getElementById('orgPreviewBody');
+            tbody.innerHTML = '';
+            result.preview.forEach(item => {
+                tbody.innerHTML += `<tr><td>${item.original}</td><td>${item.destination}</td><td>${item.size}</td></tr>`;
+            });
+            document.getElementById('orgPreview').style.display = 'block';
+        }
+
+        async function executeOrganize() {
+            if (!confirm('Organize these files?')) return;
+            
+            hideStatus('orgStatus');
+            document.getElementById('executeOrgBtn').disabled = true;
+            showSpinner('orgSpinner');
+            
+            const directory = document.getElementById('directory').value;
+            const mode = document.getElementById('mode').value;
+            const targetDir = document.getElementById('targetDir').value || directory;
+            
+            try {
+                const data = { directory, mode, target_dir: targetDir };
+                if (mode === 'project') {
+                    const rulesText = document.getElementById('projectRules').value;
+                    if (rulesText) data.rules = JSON.parse(rulesText);
+                }
+                
+                const response = await fetch('/organize/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayOrgResults(result);
+                    showStatus('orgStatus', 'Organization completed!', 'success');
+                    document.getElementById('orgPreview').style.display = 'none';
+                } else {
+                    showStatus('orgStatus', 'Completed with errors', 'warning');
+                    displayOrgResults(result);
+                }
+            } catch (error) {
+                showStatus('orgStatus', 'Error: ' + error.message, 'error');
+            } finally {
+                hideSpinner('orgSpinner');
+                document.getElementById('executeOrgBtn').disabled = false;
+            }
+        }
+
+        function displayOrgResults(result) {
+            let html = `<p><strong>Processed:</strong> ${result.processed}</p>
+                       <p><strong>Moved:</strong> ${result.summary.moved}</p>
+                       <p><strong>Skipped:</strong> ${result.summary.skipped}</p>`;
+            
+            if (result.summary.by_category) {
+                html += '<h4>By Category:</h4><ul>';
+                for (const [cat, count] of Object.entries(result.summary.by_category)) {
+                    html += `<li>${cat}: ${count} files</li>`;
+                }
+                html += '</ul>';
+            }
+            
+            document.getElementById('orgResultsContent').innerHTML = html;
+            document.getElementById('orgResults').style.display = 'block';
+        }
+
+        // RENAME FUNCTIONS
+        let uploadedFiles = [];
+        let renamedFiles = [];
+
+        document.getElementById('fileUpload').addEventListener('change', function() {
+            const count = this.files.length;
+            document.getElementById('fileCount').textContent = 
+                count > 0 ? `✅ ${count} file(s) selected` : '';
+        });
+
+        async function uploadAndPreview() {
+            hideStatus('renameStatus');
+            document.getElementById('renamePreview').style.display = 'none';
+            document.getElementById('executeUploadBtn').style.display = 'none';
+            document.getElementById('downloadAllBtn').style.display = 'none';
+            
+            const fileInput = document.getElementById('fileUpload');
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                showStatus('renameStatus', 'Please select files', 'error');
+                return;
+            }
+            
+            showSpinner('renameSpinner');
+            showStatus('renameStatus', 'Processing with OCR...', 'warning');
+            
+            try {
+                const formData = new FormData();
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files[]', files[i]);
+                }
+                
+                const response = await fetch('/rename/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    uploadedFiles = result.results.map(r => r.original_path);
+                    displayRenamePreview(result.results);
+                    document.getElementById('executeUploadBtn').style.display = 'inline-block';
+                    showStatus('renameStatus', `Processed ${result.uploaded_count} screenshots`, 'success');
+                } else {
+                    showStatus('renameStatus', 'Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showStatus('renameStatus', 'Error: ' + error.message, 'error');
+            } finally {
+                hideSpinner('renameSpinner');
+            }
+        }
+
+        async function previewFromPaths() {
+            hideStatus('renameStatus');
+            document.getElementById('renamePreview').style.display = 'none';
+            document.getElementById('executePathBtn').style.display = 'none';
+            
+            const fileListText = document.getElementById('fileList').value;
+            const files = fileListText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            
+            if (files.length === 0) {
+                showStatus('renameStatus', 'Please enter file paths', 'error');
+                return;
+            }
+            
+            showSpinner('renameSpinner');
+            showStatus('renameStatus', 'Processing with OCR...', 'warning');
+            
+            try {
+                const response = await fetch('/rename/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ files })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayRenamePreview(result.results);
+                    document.getElementById('executePathBtn').style.display = 'inline-block';
+                    showStatus('renameStatus', `Processed ${result.results.length} screenshots`, 'success');
+                } else {
+                    showStatus('renameStatus', 'Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showStatus('renameStatus', 'Error: ' + error.message, 'error');
+            } finally {
+                hideSpinner('renameSpinner');
+            }
+        }
+
+        function displayRenamePreview(results) {
+            const successCount = results.filter(r => r.status === 'success').length;
+            const errorCount = results.filter(r => r.status === 'error').length;
+            
+            document.getElementById('renamePreviewSummary').textContent = 
+                `${successCount} ready${errorCount > 0 ? `, ${errorCount} errors` : ''}`;
+            
+            const tbody = document.getElementById('renamePreviewBody');
+            tbody.innerHTML = '';
+            results.forEach(item => {
+                if (item.status === 'error') {
+                    tbody.innerHTML += `<tr><td>${item.original_name}</td><td colspan="2" style="color: #f87171;">${item.error}</td></tr>`;
+                } else {
+                    const text = item.extracted_text.substring(0, 100);
+                    tbody.innerHTML += `<tr><td>${item.original_name}</td><td><strong>${item.proposed_name}</strong></td><td style="font-size: 0.9em; color: #a1a1aa;">${text}...</td></tr>`;
+                }
+            });
+            document.getElementById('renamePreview').style.display = 'block';
+        }
+
+         async function executePathRename() {
+        if (!confirm('Rename files in original location?')) return;
+        
+        hideStatus('renameStatus');
+        document.getElementById('executePathBtn').disabled = true;
+        showSpinner('renameSpinner');
+        
+        const fileListText = document.getElementById('fileList').value;
+        const files = fileListText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        
+        try {
+            const response = await fetch('/rename/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ files })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                displayRenameResults(result);
+                showStatus('renameStatus', 'Files renamed successfully!', 'success');
+                document.getElementById('renamePreview').style.display = 'none';
+            } else {
+                showStatus('renameStatus', 'Completed with errors', 'warning');
+                displayRenameResults(result);
+            }
+        } catch (error) {
+            showStatus('renameStatus', 'Error: ' + error.message, 'error');
+        } finally {
+            hideSpinner('renameSpinner');
+            document.getElementById('executePathBtn').disabled = false;
+        }
+    }
+
+    function displayRenameResults(result) {
+        const renamed = result.summary ? result.summary.renamed : 0;
+        const errors = result.summary ? result.summary.errors : 0;
+        
+        let html = `<p><strong>Renamed:</strong> ${renamed}</p><p><strong>Errors:</strong> ${errors}</p>`;
+        
+        if (result.results && result.results.length > 0) {
+            html += '<table><thead><tr><th>Original</th><th>New Name</th><th>Status</th></tr></thead><tbody>';
+            result.results.forEach(item => {
+                const statusText = item.status === 'renamed' ? '✓ Renamed' : '✗ ' + (item.error || 'Error');
+                const color = item.status === 'renamed' ? '#34d399' : '#f87171';
+                html += `<tr><td>${item.original_name}</td><td>${item.proposed_name || '-'}</td><td style="color: ${color};">${statusText}</td></tr>`;
+            });
+            html += '</tbody></table>';
+        }
+        
+        document.getElementById('renameResultsContent').innerHTML = html;
+        document.getElementById('renameResults').style.display = 'block';
+    }
+
+    function downloadAllRenamed() {
+        if (renamedFiles.length === 0) {
+            showStatus('renameStatus', 'No files to download', 'error');
+            return;
+        }
+        
+        showStatus('renameStatus', 'Starting downloads...', 'warning');
+        
+        renamedFiles.forEach((file, index) => {
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = '/download/' + file.filename;
+                link.download = file.filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }, index * 500);
+        });
+        
+        setTimeout(() => {
+            showStatus('renameStatus', `Downloading ${renamedFiles.length} file(s)!`, 'success');
+        }, 1000);
+    }
+
+    // DUPLICATE FINDER FUNCTIONS
+    async function scanDuplicates() {
+        hideStatus('dupStatus');
+        document.getElementById('dupResults').style.display = 'none';
+        
+        const directory = document.getElementById('dupDirectory').value;
+        const recursive = document.getElementById('recursive').checked;
+        
+        if (!directory) {
+            showStatus('dupStatus', 'Please enter a directory path', 'error');
+            return;
+        }
+        
+        showSpinner('dupSpinner');
+        showStatus('dupStatus', 'Scanning for duplicates...', 'warning');
+        
+        try {
+            const response = await fetch('/duplicates/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ directory, recursive })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                displayDuplicates(result);
+                showStatus('dupStatus', `Found ${result.total_groups} duplicate groups`, 'success');
+            } else {
+                showStatus('dupStatus', 'Error: ' + result.error, 'error');
+            }
+        } catch (error) {
+            showStatus('dupStatus', 'Error: ' + error.message, 'error');
+        } finally {
+            hideSpinner('dupSpinner');
+        }
+    }
+
+    function displayDuplicates(result) {
+        document.getElementById('dupSummary').textContent = 
+            `${result.total_groups} groups found. Potential space savings: ${result.total_space_saveable}`;
+        
+        let html = '';
+        result.groups.forEach((group, idx) => {
+            html += `<div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                <h4>Duplicate Group ${idx + 1} (${group.count} files) - Save ${group.space_saveable}</h4>
+                <ul style="margin-left: 1.5rem; margin-top: 1rem;">`;
+            group.files.forEach(file => {
+                html += `<li style="margin-bottom: 0.5rem;">${file.path} (${file.size})</li>`;
+            });
+            html += `</ul></div>`;
+        });
+        
+        document.getElementById('dupResultsContent').innerHTML = html;
+        document.getElementById('dupResults').style.display = 'block';
+
+
+
+        
+    }
+</script>   
+</body>
+</html>                

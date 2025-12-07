@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Duplicate Finder - File Management System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>🔍 Duplicate File Finder</h2>
+    <p>Find and manage duplicate files based on content. Free up storage space efficiently.</p>
+</div>
+
+<div class="card">
+    <h3>Scan for Duplicates</h3>
+    
+    <form id="scanForm">
+        <div class="form-group">
+            <label for="directory">Directory Path:</label>
+            <input type="text" id="directory" name="directory" placeholder="C:/Users/YourName/Documents or just type: ." required>
+            <small style="display: block; margin-top: 8px; color: #666;">
+                💡 Tip: Use forward slashes (/) or type a dot (.) for current directory
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="recursive" name="recursive" checked>
+                Scan subdirectories recursively
+            </label>
+        </div>
+
+        <button type="button" class="btn" onclick="scanDuplicates()">Scan for Duplicates</button>
+    </form>
+</div>
+
+<div id="statusMessage" class="status-message"></div>
+
+<div class="spinner" id="spinner"></div>
+
+<div class="card" id="resultsCard" style="display: none;">
+    <h3>Duplicate Groups Found</h3>
+    <p id="resultsSummary"></p>
+    
+    <div style="margin-bottom: 1rem;">
+        <button type="button" class="btn btn-danger" onclick="removeDuplicates()">Remove Duplicates (Keep First)</button>
+        <button type="button" class="btn btn-secondary" onclick="archiveDuplicates()">Archive Duplicates</button>
+    </div>
+    
+    <div id="duplicateGroups" style="max-height: 600px; overflow-y: auto;">
+    </div>
+</div>
+
+<div class="card" id="actionResultsCard" style="display: none;">
+    <h3>Action Results</h3>
+    <div id="actionResultsContent"></div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentDuplicateGroups = {};
+
+function showStatus(message, type) {
+    const statusDiv = document.getElementById('statusMessage');
+    statusDiv.textContent = message;
+    statusDiv.className = 'status-message active ' + type;
+    statusDiv.style.display = 'block';
+}
+
+function hideStatus() {
+    const statusDiv = document.getElementById('statusMessage');
+    statusDiv.style.display = 'none';
+}
+
+function showSpinner() {
+    document.getElementById('spinner').classList.add('active');
+}
+
+function hideSpinner() {
+    document.getElementById('spinner').classList.remove('active');
+}
+
+async function scanDuplicates() {
+    hideStatus();
+    
+    const resultsCard = document.getElementById('resultsCard');
+    const actionResultsCard = document.getElementById('actionResultsCard');
+    
+    if (resultsCard) resultsCard.style.display = 'none';
+    if (actionResultsCard) actionResultsCard.style.display = 'none';
+    
+    const directory = document.getElementById('directory').value;
+    const recursive = document.getElementById('recursive').checked;
+    
+    if (!directory) {
+        showStatus('Please enter a directory path', 'error');
+        return;
+    }
+    
+    showSpinner();
+    showStatus('Scanning for duplicates... This may take a while for large directories.', 'warning');
+    
+    try {
+        const response = await fetch('/duplicates/scan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                directory: directory,
+                recursive: recursive
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            if (result.total_groups === 0) {
+                showStatus('No duplicate files found!', 'success');
+            } else {
+                displayDuplicates(result);
+                showStatus(`Found ${result.total_groups} duplicate groups. Potential space savings: ${result.total_space_saveable}`, 'success');
+            }
+        } else {
+            showStatus('Error: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showStatus('Error: ' + error.message, 'error');
+    } finally {
+        hideSpinner();
+    }
+}
+
+function displayDuplicates(result) {
+    const resultsCard = document.getElementById('resultsCard');
+    const resultsSummary = document.getElementById('resultsSummary');
+    const duplicateGroups = document.getElementById('duplicateGroups');
+    
+    currentDuplicateGroups = {};
+    
+    resultsSummary.innerHTML = `
+        <strong>Total Duplicate Groups:</strong> ${result.total_groups}<br>
+        <strong>Potential Space Savings:</strong> ${result.total_space_saveable}
+    `;
+    
+    duplicateGroups.innerHTML = '';
+    
+    result.groups.forEach((group, index) => {
+        // Store group data for later use
+        currentDuplicateGroups[group.hash] = group;
+        
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'card';
+        groupDiv.style.marginBottom = '1rem';
+        groupDiv.style.backgroundColor = '#f8f9fa';
+        
+        let groupHTML = `
+            <h4>Duplicate Group ${index + 1}</h4>
+            <p><strong>Files:</strong> ${group.count} | <strong>Space Saveable:</strong> ${group.space_saveable}</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>File Path</th>
+                        <th>Size</th>
+                        <th>Modified</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        group.files.forEach((file, fileIndex) => {
+            const keepLabel = fileIndex === 0 ? ' <span style="color: #27ae60; font-weight: bold;">(Will be kept)</span>' : '';
+            groupHTML += `
+                <tr>
+                    <td>${file.path}${keepLabel}</td>
+                    <td>${file.size}</td>
+                    <td>${file.modified}</td>
+                </tr>
+            `;
+        });
+        
+        groupHTML += `
+                </tbody>
+            </table>
+        `;
+        
+        groupDiv.innerHTML = groupHTML;
+        duplicateGroups.appendChild(groupDiv);
+    });
+    
+    resultsCard.style.display = 'block';
+}
+
+async function removeDuplicates() {
+    if (!confirm('Are you sure you want to remove duplicate files? The first file in each group will be kept. This action cannot be undone!')) {
+        return;
+    }
+    
+    hideStatus();
+    document.getElementById('actionResultsCard').style.display = 'none';
+    
+    showSpinner();
+    showStatus('Removing duplicates...', 'warning');
+    
+    try {
+        const response = await fetch('/duplicates/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'remove',
+                groups: currentDuplicateGroups
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayActionResults(result, 'Removal');
+            showStatus('Duplicates removed successfully!', 'success');
+            document.getElementById('resultsCard').style.display = 'none';
+        } else {
+            showStatus('Removal completed with errors', 'warning');
+            displayActionResults(result, 'Removal');
+        }
+    } catch (error) {
+        showStatus('Error: ' + error.message, 'error');
+    } finally {
+        hideSpinner();
+    }
+}
+
+async function archiveDuplicates() {
+    const archiveDir = prompt('Enter archive directory path:', 'duplicates_archive');
+    
+    if (!archiveDir) {
+        return;
+    }
+    
+    hideStatus();
+    document.getElementById('actionResultsCard').style.display = 'none';
+    
+    showSpinner();
+    showStatus('Archiving duplicates...', 'warning');
+    
+    try {
+        const response = await fetch('/duplicates/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'archive',
+                groups: currentDuplicateGroups,
+                archive_dir: archiveDir
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayActionResults(result, 'Archive');
+            showStatus('Duplicates archived successfully!', 'success');
+            document.getElementById('resultsCard').style.display = 'none';
+        } else {
+            showStatus('Archive completed with errors', 'warning');
+            displayActionResults(result, 'Archive');
+        }
+    } catch (error) {
+        showStatus('Error: ' + error.message, 'error');
+    } finally {
+        hideSpinner();
+    }
+}
+
+function displayActionResults(result, actionType) {
+    const actionResultsCard = document.getElementById('actionResultsCard');
+    const actionResultsContent = document.getElementById('actionResultsContent');
+    
+    let html = `
+        <p><strong>Files Processed:</strong> ${result.processed}</p>
+    `;
+    
+    if (actionType === 'Removal') {
+        html += `
+            <p><strong>Files Removed:</strong> ${result.summary.removed}</p>
+            <p><strong>Files Kept:</strong> ${result.summary.kept}</p>
+            <p><strong>Space Saved:</strong> ${result.summary.space_saved_formatted || '0 B'}</p>
+        `;
+    } else {
+        html += `
+            <p><strong>Files Archived:</strong> ${result.summary.archived}</p>
+            <p><strong>Files Kept:</strong> ${result.summary.kept}</p>
+            <p><strong>Space Moved:</strong> ${result.summary.space_moved_formatted || '0 B'}</p>
+        `;
+    }
+    
+    if (result.errors && result.errors.length > 0) {
+        html += '<h4>Errors:</h4><ul>';
+        result.errors.forEach(error => {
+            html += `<li style="color: #e74c3c;">${error}</li>`;
+        });
+        html += '</ul>';
+    }
+    
+    actionResultsContent.innerHTML = html;
+    actionResultsCard.style.display = 'block';
+}
+</script>
+{% endblock %}
